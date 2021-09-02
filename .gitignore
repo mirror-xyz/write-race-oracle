@@ -1,0 +1,13 @@
+node_modules/
+outputs/
+Reports/
+coverage/
+cache/
+artifacts/
+build/
+.env
+*.DS_Store
+env*
+.vscode
+args.js
+temp.js
