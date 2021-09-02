@@ -381,7 +381,7 @@ contract Heroes {
         uint256 index,
         bytes32[] calldata merkleProof
     ) public {
-        // Only one claimed per person.
+        // Only one claimed per account.
         require(!claimed[account], "already claimed");
         claimed[account] = true;
         // Prove $WRITE Race Identity.
