@@ -30,6 +30,7 @@ contract Heroes {
     // The address of the $WRITE Race Oracle for identity.
     address immutable oracle;
     mapping(address => bool) public claimed;
+    uint256 nextTokenId = 1;
     string[] private firstNames = [
         "Orie",
         "Guadalupe",
@@ -322,13 +323,31 @@ contract Heroes {
         "Sama",
         "Chief",
         "Ambassador",
-        "Nari"
+        "Nari",
+        "Lion-hearted",
+        "Tireless",
+        "Poet",
+        "Beloved",
+        "Godlike",
+        "All-Powerful",
+        "Sweet-spoken",
+        "Wise Old",
+        "Hotheaded",
+        "Peerless",
+        "Gentle",
+        "Swift-footed",
+        "Mysterious",
+        "Dear",
+        "Revered",
+        "Adored"
     ];
     string[] private suffixes = [
         "I",
         "II",
         "III",
+        "the Thoughtful",
         "of the Sword",
+        "the Illustrious",
         "from the North",
         "from the South",
         "the Younger",
@@ -336,6 +355,7 @@ contract Heroes {
         "the Wise",
         "the Mighty",
         "the Great",
+        "the Hero",
         "the Adventurer",
         "the Beautiful",
         "the Conqueror",
@@ -347,7 +367,19 @@ contract Heroes {
         "the Just",
         "the Peaceful",
         "the Rich",
-        "the Learned"
+        "the Learned",
+        "the Mean",
+        "the Bold",
+        "the Unavoidable",
+        "the Giant",
+        "the Deep-minded",
+        "the Brilliant",
+        "the Joyful",
+        "the Famous",
+        "the Bard",
+        "the Knowing",
+        "the Sophisticated",
+        "the Enlightened"
     ];
 
     mapping(uint256 => address) internal _owners;
@@ -392,7 +424,9 @@ contract Heroes {
         // Check that only one character is claimed per account.
         require(!_exists(index), "already claimed");
         // Mint a character for this account.
-        _safeMint(account, index);
+        _safeMint(account, nextTokenId);
+        // Increment the next token ID.
+        nextTokenId += 1;
     }
 
     // ============ Building Token URI ============
@@ -407,7 +441,7 @@ contract Heroes {
         string[17] memory parts;
         parts[
             0
-        ] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: "Garamond"; font-size: 22px; }</style><rect width="100%" height="100%" fill="#b6454c" /><text x="50%" y ="50%"  dominant-baseline="middle" text-anchor="middle" class="base">';
+        ] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
         parts[1] = getFullName(tokenId);
         parts[2] = "</text></svg>";
 
@@ -420,7 +454,7 @@ contract Heroes {
                     abi.encodePacked(
                         '{"name": "Hero #',
                         toString(tokenId),
-                        '", "description": "NFT Heroes", "image": "data:image/svg+xml;base64,',
+                        '", "description": "Heroes", "image": "data:image/svg+xml;base64,',
                         Base64.encode(bytes(output)),
                         '"}'
                     )
@@ -434,6 +468,11 @@ contract Heroes {
     }
 
     function getFullName(uint256 tokenId) public view returns (string memory) {
+        require(
+            _exists(tokenId),
+            "ERC721: approved query for nonexistent token"
+        );
+
         uint256 randFirst = random(
             string(abi.encodePacked("f", toString(tokenId)))
         );
@@ -447,8 +486,8 @@ contract Heroes {
             string(abi.encodePacked("s", toString(tokenId)))
         );
 
-        bool hasPrefix = randPrefix % 21 > 14;
-        bool hasSuffix = randSuffix % 21 > 18;
+        bool hasPrefix = randPrefix % 21 > 13;
+        bool hasSuffix = randSuffix % 21 > 13;
 
         string memory fullName = string(
             abi.encodePacked(
