@@ -136,7 +136,6 @@ contract Heroes {
         "Leota",
         "Camilla",
         "Mat",
-        "Jonathan",
         "Helen",
         "Letha",
         "Thomas",
@@ -252,7 +251,6 @@ contract Heroes {
         "Holmes",
         "Griffin",
         "Patel",
-        "Weston",
         "Kabble",
         "Brown",
         "Guillan",
@@ -332,7 +330,6 @@ contract Heroes {
         "All-Powerful",
         "Sweet-spoken",
         "Wise Old",
-        "Hotheaded",
         "Peerless",
         "Gentle",
         "Swift-footed",
@@ -368,9 +365,7 @@ contract Heroes {
         "the Peaceful",
         "the Rich",
         "the Learned",
-        "the Mean",
         "the Bold",
-        "the Unavoidable",
         "the Giant",
         "the Deep-minded",
         "the Brilliant",
@@ -419,10 +414,8 @@ contract Heroes {
         // Prove $WRITE Race Identity.
         require(
             IMirrorWriteRaceOracle(oracle).verify(account, index, merkleProof),
-            "must prove place in write race"
+            "must prove oracle"
         );
-        // Check that only one character is claimed per account.
-        require(!_exists(index), "already claimed");
         // Mint a character for this account.
         _safeMint(account, nextTokenId);
         // Increment the next token ID.
@@ -433,12 +426,9 @@ contract Heroes {
 
     // Mostly looted from Loot: https://etherscan.io/address/0xff9c1b15b16263c61d017ee9f65c50e4ae0113d7#code
     function tokenURI(uint256 tokenId) public view returns (string memory) {
-        require(
-            _exists(tokenId),
-            "ERC721: approved query for nonexistent token"
-        );
+        require(_exists(tokenId), "nonexistent token");
 
-        string[17] memory parts;
+        string[3] memory parts;
         parts[
             0
         ] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base">';
@@ -468,10 +458,7 @@ contract Heroes {
     }
 
     function getFullName(uint256 tokenId) public view returns (string memory) {
-        require(
-            _exists(tokenId),
-            "ERC721: approved query for nonexistent token"
-        );
+        require(_exists(tokenId), "nonexistent token");
 
         uint256 randFirst = random(
             string(abi.encodePacked("f", toString(tokenId)))
@@ -522,11 +509,12 @@ contract Heroes {
 
     // ============ NFT Methods ============
 
+    function supportsInterface(bytes4 interfaceId) public pure returns (bool) {
+        return interfaceId == 0x780e9d63;
+    }
+
     function balanceOf(address owner_) public view returns (uint256) {
-        require(
-            owner_ != address(0),
-            "ERC721: balance query for the zero address"
-        );
+        require(owner_ != address(0), "balance query for the zero address");
 
         return _balances[owner_];
     }
@@ -534,10 +522,7 @@ contract Heroes {
     function ownerOf(uint256 tokenId) public view virtual returns (address) {
         address _owner = _owners[tokenId];
 
-        require(
-            _owner != address(0),
-            "ERC721: owner query for nonexistent token"
-        );
+        require(_owner != address(0), "owner query for nonexistent token");
 
         return _owner;
     }
@@ -545,7 +530,7 @@ contract Heroes {
     function burn(uint256 tokenId) public {
         require(
             _isApprovedOrOwner(msg.sender, tokenId),
-            "ERC721: transfer caller is not owner nor approved"
+            "transfer caller is not owner nor approved"
         );
 
         _burn(tokenId);
@@ -569,11 +554,11 @@ contract Heroes {
 
     function approve(address to, uint256 tokenId) public virtual {
         address owner = ownerOf(tokenId);
-        require(to != owner, "ERC721: approval to current owner");
+        require(to != owner, "approval to current owner");
 
         require(
             msg.sender == owner || isApprovedForAll(owner, msg.sender),
-            "ERC721: approve caller is not owner nor approved for all"
+            "approve caller is not owner nor approved for all"
         );
 
         _approve(to, tokenId);
@@ -585,16 +570,13 @@ contract Heroes {
         virtual
         returns (address)
     {
-        require(
-            _exists(tokenId),
-            "ERC721: approved query for nonexistent token"
-        );
+        require(_exists(tokenId), "nonexistent token");
 
         return _tokenApprovals[tokenId];
     }
 
     function setApprovalForAll(address approver, bool approved) public virtual {
-        require(approver != msg.sender, "ERC721: approve to caller");
+        require(approver != msg.sender, "approve to caller");
 
         _operatorApprovals[msg.sender][approver] = approved;
         emit ApprovalForAll(msg.sender, approver, approved);
@@ -616,7 +598,7 @@ contract Heroes {
         //solhint-disable-next-line max-line-length
         require(
             _isApprovedOrOwner(msg.sender, tokenId),
-            "ERC721: transfer caller is not owner nor approved"
+            "transfer caller is not owner nor approved"
         );
 
         _transfer(from, to, tokenId);
@@ -638,7 +620,7 @@ contract Heroes {
     ) public virtual {
         require(
             _isApprovedOrOwner(msg.sender, tokenId),
-            "ERC721: transfer caller is not owner nor approved"
+            "transfer caller is not owner nor approved"
         );
         _safeTransfer(from, to, tokenId, _data);
     }
@@ -652,7 +634,7 @@ contract Heroes {
         _transfer(from, to, tokenId);
         require(
             _checkOnERC721Received(from, to, tokenId, _data),
-            "ERC721: transfer to non ERC721Receiver implementer"
+            "transfer to non ERC721Receiver implementer"
         );
     }
 
@@ -662,10 +644,7 @@ contract Heroes {
         virtual
         returns (bool)
     {
-        require(
-            _exists(tokenId),
-            "ERC721: operator query for nonexistent token"
-        );
+        require(_exists(tokenId), "operator query for nonexistent token");
         address owner = ownerOf(tokenId);
         return (spender == owner ||
             getApproved(tokenId) == spender ||
@@ -684,13 +663,13 @@ contract Heroes {
         _mint(to, tokenId);
         require(
             _checkOnERC721Received(address(0), to, tokenId, _data),
-            "ERC721: transfer to non ERC721Receiver implementer"
+            "transfer to non ERC721Receiver"
         );
     }
 
     function _mint(address to, uint256 tokenId) internal virtual {
-        require(to != address(0), "ERC721: mint to the zero address");
-        require(!_exists(tokenId), "ERC721: token already minted");
+        require(to != address(0), "mint to the zero address");
+        require(!_exists(tokenId), "token already minted");
 
         _balances[to] += 1;
         _owners[tokenId] = to;
@@ -703,13 +682,10 @@ contract Heroes {
         address to,
         uint256 tokenId
     ) internal virtual {
-        require(
-            ownerOf(tokenId) == from,
-            "ERC721: transfer of token that is not own"
-        );
+        require(ownerOf(tokenId) == from, "transfer of token that is not own");
         require(
             to != address(0),
-            "ERC721: transfer to the zero address (use burn instead)"
+            "transfer to the zero address (use burn instead)"
         );
 
         // Clear approvals from the previous owner
@@ -746,9 +722,7 @@ contract Heroes {
                 return retval == IERC721Receiver(to).onERC721Received.selector;
             } catch (bytes memory reason) {
                 if (reason.length == 0) {
-                    revert(
-                        "ERC721: transfer to non ERC721Receiver implementer"
-                    );
+                    revert("transfer to non ERC721Receiver implementer");
                 } else {
                     // solhint-disable-next-line no-inline-assembly
                     assembly {
