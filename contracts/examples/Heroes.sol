@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.6;
 
-interface IWriteRaceOracle {
+interface IMirrorWriteRaceOracle {
     function verify(
         address account,
         uint256 index,
@@ -18,17 +18,18 @@ interface IERC721Receiver {
     ) external returns (bytes4);
 }
 
-/*
- * A sybil-resistant fair-mint NFT, using merkle proofs.
- *
- * Author: g.mirror.xyz (@strangechances)
- * Inpiration: Loot (https://etherscan.io/address/0xff9c1b15b16263c61d017ee9f65c50e4ae0113d7)
+/**
+ * @title Heroes
+ * @author MirrorXYZ
+ * A example of a sybil-resistant fair-mint NFT, using merkle proofs.
+ * Inspired by Loot (https://etherscan.io/address/0xff9c1b15b16263c61d017ee9f65c50e4ae0113d7)
  */
 contract Heroes {
     string public constant name = "Heroes";
     string public constant symbol = "HEROES";
     // The address of the $WRITE Race Oracle for identity.
     address immutable oracle;
+    mapping(address => bool) public claimed;
     string[] private firstNames = [
         "Orie",
         "Guadalupe",
@@ -375,16 +376,23 @@ contract Heroes {
     }
 
     // Allows any of the WRITE Race candidates to claim.
-    function claim(uint256 index, bytes32[] calldata merkleProof) public {
+    function claim(
+        address account,
+        uint256 index,
+        bytes32[] calldata merkleProof
+    ) public {
+        // Only one claimed per person.
+        require(!claimed[account], "already claimed");
+        claimed[account] = true;
         // Prove $WRITE Race Identity.
         require(
-            IWriteRaceOracle(oracle).verify(msg.sender, index, merkleProof),
+            IMirrorWriteRaceOracle(oracle).verify(account, index, merkleProof),
             "must prove place in write race"
         );
         // Check that only one character is claimed per account.
         require(!_exists(index), "already claimed");
         // Mint a character for this account.
-        _safeMint(msg.sender, index);
+        _safeMint(account, index);
     }
 
     // ============ Building Token URI ============
@@ -410,9 +418,9 @@ contract Heroes {
             bytes(
                 string(
                     abi.encodePacked(
-                        '{"name": "Aeneid Character #',
+                        '{"name": "Hero #',
                         toString(tokenId),
-                        '", "description": "Characters from Virgil", "image": "data:image/svg+xml;base64,',
+                        '", "description": "NFT Heroes", "image": "data:image/svg+xml;base64,',
                         Base64.encode(bytes(output)),
                         '"}'
                     )
